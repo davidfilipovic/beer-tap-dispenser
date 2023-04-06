@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+    beer-tap-dispenser:
+        container_name: beer-tap-dispenser
+        image: gradle:latest # this is due to some Mac M1 issues with Docker :_
+        depends_on:
+            -   postgres-db
+        volumes:
+            -   "${PWD}:/home/gradle/project"
+            -   "beer-gradle-cache:/home/gradle/.gradle"
+        working_dir: "/home/gradle/project"
+        ports:
+            -   "8080:8080"
+        networks:
+            internal-net:
+
+    postgres-db:
+        container_name: postgres-db
+        image: postgres:13.4-alpine
+        restart: on-failure
+        ports:
+            - 5432:5432
+        volumes:
+            - beer-volume:/var/lib/postgresql/data
+        env_file:
+            - postgres.dev.env
+        networks:
+            internal-net:
+
+volumes:
+    beer-volume:
+    beer-gradle-cache:
+
+networks:
+    internal-net:
+        name: beer-net
